@@ -18,7 +18,9 @@ target_include_directories(mqtt_pico PRIVATE
 # Vincula las bibliotecas necesarias
 target_link_libraries(mqtt_pico
     pico_stdlib                          # Biblioteca estándar de Pico
-    pico_cyw43_arch_lwip                 # Wi-Fi y lwIP
+    pico_cyw43_arch_lwip               # Wi-Fi y lwIP
+    hardware_pio
+    hardware_adc
     ${CMAKE_CURRENT_LIST_DIR}/libs/libpaho-mqtt3c.a  # Biblioteca estática MQTT síncrono
 )
 
