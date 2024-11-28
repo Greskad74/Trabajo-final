@@ -12,7 +12,6 @@
 #define QOS         1                                 // Calidad de servicio
 #define PAYLOAD     "field1=25.5&field2=60"           // Datos a enviar (ej: temperatura y humedad)
 #define TIMEOUT     10000L                            // Tiempo de espera
-
 int main() {
     stdio_init_all();
 
@@ -45,20 +44,47 @@ int main() {
     }
     printf("Conectado al broker MQTT de ThingSpeak\n");
 
-    // Publicar un mensaje en ThingSpeak
-    MQTTClient_message pubmsg = MQTTClient_message_initializer;
-    pubmsg.payload = PAYLOAD;  // Datos a publicar
-    pubmsg.payloadlen = strlen(PAYLOAD);
-    pubmsg.qos = QOS;
-    pubmsg.retained = 0;
+    while (true)
+    {
+        float temp = Temperatura();
+   
+        char payload[64];
+        snprintf(payload, sizeof(payload), "field1= %2.f", temp)
+        MQTTClient_message pubmsg = MQTTClient_message_initializer;
+    
+        pubmsg.payload = payload;  // Datos a publicar
+        pubmsg.payloadlen = strlen(payload);
+        pubmsg.qos = QOS;
+        pubmsg.retained = 0;
 
-    MQTTClient_publishMessage(client, TOPIC, &pubmsg, NULL);
-    printf("Mensaje enviado: %s\n", PAYLOAD);
+        MQTTClient_publishMessage(client, TOPIC, &pubmsg, NULL);
+        printf("Mensaje enviado: %s\n", payload);
+    
+        sleep_ms (15000); //Tiempo a esperar a publicar, dado por Thinkispeead
+             
+    }
+    
+    
 
-    // Desconectar del broker MQTT
+    // Parte muerta por bucle infinito
     MQTTClient_disconnect(client, TIMEOUT);
     MQTTClient_destroy(&client);
 
     cyw43_arch_deinit();
     return 0;
+}
+
+float Temperatura (){
+adc_init();
+  adc_set_temp_sensor_enabled(true);
+  adc_select_input(4);
+  uint16_t raw = adc_read();
+    const float conversion = 3.33/4094;
+    float resultado = raw * conversion;
+     return  27 - (resultado - 0.706)/0.001721;
+    
+
+ 
+
+
 }
