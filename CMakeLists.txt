@@ -38,15 +38,17 @@ target_include_directories(mqtt PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/include
     ${PICO_SDK_PATH}/lib/lwip/src/include  
     ${PICO_SDK_PATH}/lib/lwip/test/unit
+    ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}/.. 
 )
 
 # Link required libraries
 target_link_libraries(mqtt
     pico_stdlib
-    pico_cyw43_arch_lwip_threadsafe_background  # Puedes ajustar según tu arquitectura
+    pico_cyw43_arch_lwip_threadsafe_background
+    pico_lwip_http  # Puedes ajustar según tu arquitectura
     hardware_pio
     hardware_adc
-    ${CMAKE_CURRENT_LIST_DIR}/libs/libpaho-mqtt3c.a
 )
 
 # Generate additional outputs
