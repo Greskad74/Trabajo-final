@@ -13,6 +13,7 @@
 #define QOS         1                                 // Calidad de servicio
 #define PAYLOAD     "field1=25.5&field2=60"           // Datos a enviar (ej: temperatura y humedad)
 #define TIMEOUT     10000L                            // Tiempo de espera
+float Temperatura();
 int main() {
     stdio_init_all();
 
@@ -50,7 +51,7 @@ int main() {
         float temp = Temperatura();
    
         char payload[64];
-        snprintf(payload, sizeof(payload), "field1= %2.f", temp)
+        snprintf(payload, sizeof(payload), "field1= %2.f", temp);
         MQTTClient_message pubmsg = MQTTClient_message_initializer;
     
         pubmsg.payload = payload;  // Datos a publicar
