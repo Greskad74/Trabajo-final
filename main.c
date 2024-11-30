@@ -12,7 +12,10 @@ char myBuff[4096];
 #define THINGSPEAK_HOST "api.thingspeak.com"
 #define THINGSPEAK_PORT 80
 #define API_KEY "I9BG5WTCMTIKTIQ1"
-#define URL_TEMPLATE "/update?api_key=%s&field1=%.2f"
+#define USERNAME "FBItBSULLQEVNBoLCzo8ERI"
+#define CLIENT_ID "FBItBSULLQEVNBoLCzo8ERI"
+#define PASSWORD "Sd1khTfpnH1Dc+RhuwaDs39/"
+#define URL_TEMPLATE "/update?api_key=%s&field1=%.2f&username=%s&clientId=%s&password=%s"
 
 void result(void *arg, httpc_result_t httpc_result,
             u32_t rx_content_len, u32_t srv_res, err_t err)
@@ -128,14 +131,6 @@ int setup(uint32_t country, const char *ssid,
     return status;
 }
 
-#ifndef WIFI_SSID
-#define WIFI_SSID "WIFI_SSID"
-#endif
-
-#ifndef WIFI_PASSWORD
-#define WIFI_PASSWORD "WIFI_PASS"
-#endif
-
 char ssid[] = WIFI_SSID;
 char pass[] = WIFI_PASSWORD;
 uint32_t country = CYW43_COUNTRY_NETHERLANDS;
@@ -153,7 +148,6 @@ int main()
 
     if (setup(country, ssid, pass, auth, "MyPicoW", NULL, NULL, NULL) == CYW43_LINK_UP)
     {
-        uint16_t port = 80;
         httpc_connection_t settings;
         
         settings.result_fn = result;
@@ -162,7 +156,7 @@ int main()
         while (true) {
             float temp = Temperatura();
             char url[128];
-            snprintf(url, sizeof(url), URL_TEMPLATE, API_KEY, temp);
+            snprintf(url, sizeof(url), URL_TEMPLATE, API_KEY, temp, USERNAME, CLIENT_ID, PASSWORD);
 
             err_t err = httpc_get_file_dns(THINGSPEAK_HOST, THINGSPEAK_PORT, url, &settings, body, NULL, NULL);
             printf("HTTP status %d \n", err);
@@ -176,3 +170,4 @@ int main()
         cyw43_arch_poll();
     }
 }
+
