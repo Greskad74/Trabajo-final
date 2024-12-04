@@ -23,17 +23,14 @@ project(mqtt C CXX ASM)
 pico_sdk_init()
 
 # Add the main executable
-add_executable(mqtt main.c)
+add_executable(mqtt main.c  include/dandan.c)
 
-# Set program metadata
 pico_set_program_name(mqtt "mqtt")
 pico_set_program_version(mqtt "0.1")
 
-# Enable USB for standard I/O
 pico_enable_stdio_uart(mqtt 0)
 pico_enable_stdio_usb(mqtt 1)
 
-# Include directories
 target_include_directories(mqtt PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/include
     ${PICO_SDK_PATH}/lib/lwip/src/include  
@@ -42,14 +39,13 @@ target_include_directories(mqtt PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/.. 
 )
 
-# Link required libraries
 target_link_libraries(mqtt
     pico_stdlib
     pico_cyw43_arch_lwip_threadsafe_background
-    pico_lwip_http  # Puedes ajustar según tu arquitectura
+    pico_lwip_http  
     hardware_pio
     hardware_adc
+    hardware_i2c
 )
 
-# Generate additional outputs
 pico_add_extra_outputs(mqtt)

@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "pico/cyw43_arch.h"
-#include "lwip/apps/http_client.h"
-#include "hardware/adc.h"
+#include "pico/cyw43_arch.h" // Es la del controla Wifi 
+#include "lwip/apps/http_client.h" //
+#include "hardware/adc.h" // es temporal, 
+#include "dandan.h"
+#include "hardware/i2c.h"
 
 char myBuff[4096];
-
+const uint8_t num_chars_per_disp[]={7,7,7,5};
+void arranque(void);
+void impre (void);
 // Configuración de Wi-Fi y ThingSpeak
 #define WIFI_SSID "INFINITUM12C9_2.4"
 #define WIFI_PASSWORD "7bxmZ5tr6T"
@@ -139,6 +143,7 @@ uint32_t auth = CYW43_AUTH_WPA2_MIXED_PSK;
 int main()
 {
     stdio_init_all();
+    arranque();
     for (int i = 0; i < 3; i++) {
         printf("Wake-up USB\n");
         sleep_ms(1000);
@@ -153,21 +158,75 @@ int main()
         settings.result_fn = result;
         settings.headers_done_fn = headers;
 
-        while (true) {
-            float temp = Temperatura();
-            char url[128];
-            snprintf(url, sizeof(url), URL_TEMPLATE, API_KEY, temp, USERNAME, CLIENT_ID, PASSWORD);
+int retry_count = 0;
+int max_retries = 10;
 
-            err_t err = httpc_get_file_dns(THINGSPEAK_HOST, THINGSPEAK_PORT, url, &settings, body, NULL, NULL);
-            printf("HTTP status %d \n", err);
-            sleep_ms(15000); // ThingSpeak permite 1 actualización cada 15 segundos
+while (true) { // envio de datos
+    float temp = Temperatura();
+    
 
-            cyw43_arch_poll(); // Necesario para manejar las tareas de Wi-Fi
+    char url[128];
+    snprintf(url, sizeof(url), URL_TEMPLATE, API_KEY, temp, USERNAME, CLIENT_ID, PASSWORD);
+    
+    printf("URL: %s\n", url);  // Verificar la URL generada
+    err_t err = httpc_get_file_dns(THINGSPEAK_HOST, THINGSPEAK_PORT, url, &settings, body, NULL, NULL);
+   
+    if (err == HTTPC_RESULT_ERR_HOSTNAME) {
+        printf("Error de resolución DNS (local result=3). Intentando de nuevo...\n");
+        sleep_ms(5000);  // Agregar un retraso antes de reintentar
+    } else if (err == HTTPC_RESULT_ERR_CONNECT) {
+        printf("Error de conexión (local result=5). Intentando de nuevo...\n");
+        retry_count++;
+        if (retry_count >= max_retries) {
+            printf("Máximo número de reintentos alcanzado. Abortando.\n");
+            break;
         }
+        sleep_ms(5000);
+    } else if (err != HTTPC_RESULT_OK) {
+        printf("Error HTTP %d. Intentando de nuevo...\n", err);
+        retry_count++;
+        if (retry_count >= max_retries) {
+            printf("Máximo número de reintentos alcanzado. Abortando.\n");
+            break;
+        }
+        sleep_ms(5000);
+    } else {
+        printf("HTTP status %d \n", err);
+        retry_count = 0;  // Reiniciar el contador de reintentos en caso de éxito
     }
 
-    while (true) {
-        cyw43_arch_poll();
+    
+    cyw43_arch_poll(); 
+    sleep_ms(60000); // ThingSpeak permite 1 actualización cada 15 segundos
+     
+}
+    
     }
 }
 
+void arranque(void) {
+    i2c_init(i2c1, 400000);
+    gpio_set_function(2, GPIO_FUNC_I2C);
+    gpio_set_function(3, GPIO_FUNC_I2C);
+    gpio_pull_up(2);
+    gpio_pull_up(3);
+}
+
+
+void impre(void) {
+
+    dandan_t disp;
+    disp.external_vcc=false;
+    dandan_init(&disp, 128,65, 0x3C, i2c1);
+
+    dandan_limp(&disp);
+    char buf[250];
+    float tem = Temperatura();
+    snprintf(buf, sizeof(buf), "Temp: %.2f C", tem);
+    
+        dandan_escribe_string(&disp,10,10,1,buf);
+        dandan_mostrar(&disp);
+    
+        
+    
+}
