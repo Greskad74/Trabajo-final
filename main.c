@@ -139,7 +139,6 @@ char ssid[] = WIFI_SSID;
 char pass[] = WIFI_PASSWORD;
 uint32_t country = CYW43_COUNTRY_NETHERLANDS;
 uint32_t auth = CYW43_AUTH_WPA2_MIXED_PSK;
-
 int main()
 {
     stdio_init_all();
@@ -162,9 +161,11 @@ int retry_count = 0;
 int max_retries = 10;
 
 while (true) { // envio de datos
-    float temp = Temperatura();
     
+     impre();
 
+    float temp = Temperatura();
+   
     char url[128];
     snprintf(url, sizeof(url), URL_TEMPLATE, API_KEY, temp, USERNAME, CLIENT_ID, PASSWORD);
     
@@ -195,7 +196,6 @@ while (true) { // envio de datos
         retry_count = 0;  // Reiniciar el contador de reintentos en caso de éxito
     }
 
-    
     cyw43_arch_poll(); 
     sleep_ms(60000); // ThingSpeak permite 1 actualización cada 15 segundos
      
@@ -221,12 +221,13 @@ void impre(void) {
 
     dandan_limp(&disp);
     char buf[250];
+   
     float tem = Temperatura();
+    dandan_limp(&disp);
     snprintf(buf, sizeof(buf), "Temp: %.2f C", tem);
-    
+     sleep_ms(2000);
         dandan_escribe_string(&disp,10,10,1,buf);
         dandan_mostrar(&disp);
-    
-        
+            
     
 }
