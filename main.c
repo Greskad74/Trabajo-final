@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "pico/cyw43_arch.h" // Es la del controla Wifi 
+#include "pico/cyw43_arch.h" 
 #include "lwip/apps/http_client.h" //
-#include "hardware/adc.h" // es temporal, 
+#include "hardware/adc.h" 
 #include "dandan.h"
 #include "hardware/i2c.h"
 
@@ -11,8 +11,8 @@ const uint8_t num_chars_per_disp[]={7,7,7,5};
 void arranque(void);
 void impre (void);
 // Configuración de Wi-Fi y ThingSpeak
-#define WIFI_SSID "INFINITUM12C9_2.4"
-#define WIFI_PASSWORD "7bxmZ5tr6T"
+#define WIFI_SSID ":PC Puma FESC C4:."
+#define WIFI_PASSWORD "Equisde05#"
 #define THINGSPEAK_HOST "api.thingspeak.com"
 #define THINGSPEAK_PORT 80
 #define API_KEY "I9BG5WTCMTIKTIQ1"
@@ -109,15 +109,12 @@ int setup(uint32_t country, const char *ssid,
             flashrate = flashrate / (status + 1);
             printf("connect status: %d %d\n", status, flashrate);
         }
-        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
-        sleep_ms(flashrate);
-        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
-        sleep_ms(flashrate);
+        
     }
     if (status < 0) {
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
     } else {
-        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
         if (ip != NULL) {
             netif_set_ipaddr(netif_default, ip);
         }
@@ -158,7 +155,7 @@ int main()
         settings.headers_done_fn = headers;
 
 int retry_count = 0;
-int max_retries = 10;
+int max_retries = 3;
 
 while (true) { // envio de datos
     
@@ -197,7 +194,7 @@ while (true) { // envio de datos
     }
 
     cyw43_arch_poll(); 
-    sleep_ms(60000); // ThingSpeak permite 1 actualización cada 15 segundos
+    sleep_ms(20000); // ThingSpeak permite 1 actualización cada 15 segundos
      
 }
     
@@ -229,5 +226,8 @@ void impre(void) {
         dandan_escribe_string(&disp,10,10,1,buf);
         dandan_mostrar(&disp);
             
-    
+    if (tem >= 18){
+
+        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+    }
 }
